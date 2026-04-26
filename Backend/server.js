@@ -14,7 +14,15 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || "*",
+    origin: (origin, callback) => {
+      // Allow if origin matches FRONTEND_URL or if it's development/null
+      const frontend = process.env.FRONTEND_URL;
+      if (!origin || origin === frontend || frontend === "*" || origin.includes('devtunnels.ms')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -35,7 +43,14 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch((err) => console.error('Could not connect to MongoDB:', err));
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "*",
+  origin: (origin, callback) => {
+    const frontend = process.env.FRONTEND_URL;
+    if (!origin || origin === frontend || frontend === "*" || origin.includes('devtunnels.ms')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Fallback to true for development
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
