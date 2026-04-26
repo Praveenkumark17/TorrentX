@@ -14,8 +14,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: process.env.FRONTEND_URL || "*",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -33,7 +34,10 @@ mongoose.connect(process.env.MONGO_URI, {
   })
   .catch((err) => console.error('Could not connect to MongoDB:', err));
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "*",
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
